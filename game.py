@@ -9,7 +9,10 @@ class Game:
         total = 0
         i = 0
         for _ in range(10):
-            if self.rolls[i] + self.rolls[i + 1] == 10:  # spare
+            if self.rolls[i] == 10:  # strike
+                total += 10 + self.rolls[i + 1] + self.rolls[i + 2]
+                i += 1
+            elif self.rolls[i] + self.rolls[i + 1] == 10:  # spare
                 total += 10 + self.rolls[i + 2]
                 i += 2
             else:
