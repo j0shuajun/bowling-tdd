@@ -3,7 +3,8 @@
 이 문서는 `~/.claude/CLAUDE.md`(전역 규칙) 전체를 그대로 가져오지 않는다. 이 프로젝트는
 **Bowling Game Kata**를 TDD로 연습하기 위한 것으로, 전역 규칙 중 아래 항목만 차용한다.
 
-- TDD 개발 방법론 (Red → Green → Refactor)
+- TDD 개발 방법론 (Red → Green. **이 프로젝트는 Refactor 단계를 생략한다** — 아래
+  "이 프로젝트의 TDD 변형" 참고)
 - 작업 단위별로 plan/result 문서를 작성하는 관행 — 단, 저장 위치는 전역 규칙의
   `docs/tasks/`가 아니라 **`docs/` 바로 아래**로 변경한다 (예: `docs/2026-07-14_xxx_plan.md`).
 - 코드 주석은 영어로 작성한다.
@@ -13,8 +14,15 @@
 
 참고: `../harness` 프로젝트는 doc-consistency-verifier/ai-action/test-verifier/
 compliance-verifier 4개 서브에이전트로 구성된 "Verify Harness" 파이프라인까지 갖춘 더 무거운
-버전이다. 이 프로젝트는 그보다 단순한 "Original TDD + AI 보조" 버전이며, 사람이 Red-Green-
-Refactor 사이클을 직접 몰고 AI를 구현 보조 도구로 사용한다.
+버전이다. 이 프로젝트는 그보다 단순한 "Original TDD + AI 보조" 버전이며, 사람이 TDD 사이클을
+직접 몰고 AI를 구현 보조 도구로 사용한다.
+
+### 이 프로젝트의 TDD 변형: Red → Green만 진행
+
+일반적인 TDD는 Red → Green → Refactor 세 단계이지만, 이 프로젝트는 **Refactor 단계를
+진행하지 않는다.** 즉, 요구사항마다 실패하는 테스트를 작성(Red)하고 그 테스트를 통과시키는
+구현을 추가(Green)한 뒤, 곧바로 다음 요구사항의 Red로 넘어간다. 구조 개선을 위한 별도의
+리팩터링 커밋/단계는 만들지 않는다.
 
 ## 1) 프로젝트 개요
 
@@ -80,29 +88,38 @@ Refactor 사이클을 직접 몰고 AI를 구현 보조 도구로 사용한다.
   └── test_game.py
   ```
 - TDD 순서: 요구사항(기본 점수 → 스페어 → 스트라이크 → 10번째 프레임 → 퍼펙트 게임) 하나당
-  **실패하는 테스트를 먼저 작성**하고, 그 테스트를 통과시키는 **최소한의 구현**을 추가한 뒤,
-  동작을 바꾸지 않는 범위에서 **리팩터링**한다.
+  **실패하는 테스트를 먼저 작성**(Red)하고, 그 테스트를 통과시키는 **최소한의 구현**을
+  추가(Green)한 뒤, 곧바로 다음 요구사항의 Red로 넘어간다. **Refactor 단계는 진행하지
+  않는다.**
 - 다음 테스트가 요구하기 전까지 코드를 미리 추가하지 않는다. 한 번에 여러 규칙을 앞질러
   구현하지 않는다.
+- **Phase 정의**: 하나의 **Red → Green 쌍**을 하나의 **phase**로 본다 (예: "거터 게임"
+  요구사항의 Red 1개 + Green 1개 = phase 1).
+- **허락 구하기**: Red를 마칠 때(실패 확인 후)와 Green을 마칠 때(통과 확인 후) **매번**
+  다음 단계로 넘어가도 되는지 사용자에게 허락을 구한다. 즉 Red → (허락) → Green →
+  (허락) → 다음 phase의 Red 순서로, 두 단계 모두에서 멈춰서 확인받는다.
 
 ## 4) TDD 커밋 컨벤션
 
-이 프로젝트는 TDD(Red → Green → Refactor)로 진행하며, 각 단계마다 커밋 제목 앞에 아래
-태그를 붙인다.
+이 프로젝트는 TDD(Red → Green)로 진행하며, **Red마다, Green마다 각각 커밋한다** (하나의
+phase = 최소 2개 커밋). Refactor 단계를 진행하지 않으므로 `refactor:` 태그는 사용하지
+않는다.
 
-|단계|태그|의미|
-|---|---|---|
-|Red|`test:`|실패하는 테스트를 먼저 작성|
-|Green|`feat:`|테스트를 통과시키는 최소 구현|
-|Refactor|`refactor:`|동작 변경 없이 구조 개선|
+|단계|태그|의미|커밋에 포함되는 파일|
+|---|---|---|---|
+|Red|`test:`|실패하는 테스트를 먼저 작성|해당 테스트 파일 + 그 phase의 `..._plan.md`|
+|Green|`feat:`|테스트를 통과시키는 최소 구현|구현 파일(`game.py`) + 그 phase의 `..._result.md`|
 
 테스트 파일명 규칙: 대상 모듈이 프로젝트 루트의 `game.py`이므로, 테스트 파일은
 `tests/test_game.py`로 대응한다.
 
 ## 5) plan/result 문서 규칙
 
-- 코드 변경을 동반하는 작업은 구현 착수 전에 `docs/yyyy-mm-dd_<summary>_plan.md`를
-  작성하고, 테스트 통과를 확인한 뒤 `docs/yyyy-mm-dd_<summary>_result.md`를 작성한다.
+- **문서 단위 = phase (Red+Green 쌍) 하나당 plan 1개 + result 1개.** 여러 phase를 묶어서
+  문서 하나로 뭉치거나, Red/Green 각각에 별도 문서를 만들지 않는다.
+- 해당 phase의 Red를 작성하기 전에 `docs/yyyy-mm-dd_<phase-summary>_plan.md`를 먼저
+  작성하고, 그 phase의 Green까지 테스트 통과를 확인한 뒤
+  `docs/yyyy-mm-dd_<phase-summary>_result.md`를 작성한다.
   (전역 규칙의 `docs/tasks/` 하위가 아니라 `docs/` 바로 아래에 둔다.)
 - 코드 변경이 없는 작업(예: 이 문서 자체의 수정, 규칙 논의)은 plan/result 문서를 만들지
   않는다.
