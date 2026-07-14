@@ -42,3 +42,25 @@ def test_one_strike_adds_next_two_rolls_as_bonus():
     roll_many(game, 16, 0)
 
     assert game.score() == 26
+
+
+def test_tenth_frame_strike_gets_two_bonus_rolls():
+    game = Game()
+
+    roll_many(game, 18, 0)  # frames 1-9: all gutter
+    game.roll(10)  # frame 10: strike
+    game.roll(5)
+    game.roll(3)
+
+    assert game.score() == 18
+
+
+def test_tenth_frame_spare_gets_one_bonus_roll():
+    game = Game()
+
+    roll_many(game, 18, 0)  # frames 1-9: all gutter
+    game.roll(5)
+    game.roll(5)  # frame 10: spare
+    game.roll(4)
+
+    assert game.score() == 14
